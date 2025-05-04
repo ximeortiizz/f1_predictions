@@ -15,7 +15,6 @@ This project uses historical race data and qualifying lap times to predict the t
 - numpy
 - pandas
 - scikit-learn
-- matplotlib
 
 ## How it works 🏁 
 This project uses machine learning to predict Formula 1 race lap times by analyzing multiple features such as qualifying times, weather conditions, and historical performance data. Here's how it works:
