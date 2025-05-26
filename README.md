@@ -30,7 +30,11 @@ This project uses machine learning to predict Formula 1 race lap times by analyz
 2. Train with more historical races and conditions
 3. Support race team strategy prediction or race result classification
 4. Visualize the prediction results using matplotlib 
-   
+
+#### Credits
+
+This project was inspired by @mar-antaya.
+Much of the structure and initial codebase was adapted from her repository :)
 
  
 
