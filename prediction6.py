@@ -1,10 +1,9 @@
-#modelo de machine learning grading boosting (analisis de regresion)
 import os
-import fastf1 #cargar datos oficiales de f1
+import fastf1 #import data of f1 API 
 import pandas as pd
 import numpy as np
 import requests
-from sklearn.model_selection import train_test_split #para entrenar un modelo de predicción y evaluarlo.
+from sklearn.model_selection import train_test_split #to train the and evaluate it s
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error
 
@@ -18,7 +17,7 @@ session_2024.load()
 
 # Extract lap times
 laps_2024 = session_2024.laps[["Driver", "LapTime", "Sector1Time", "Sector2Time", "Sector3Time"]].copy() #Se extraen los tiempos de vuelta (LapTime) por piloto.
-laps_2024.dropna(inplace=True) #Se eliminan los valores vacíos.
+laps_2024.dropna(inplace=True) #Empty values are deleted 
 
 for col in ["LapTime", "Sector1Time","Sector2Time", "Sector3Time"]:
     laps_2024[f"{col} (s)"]= laps_2024[col].dt.total_seconds()
@@ -33,7 +32,7 @@ sector_times_2024["TotalSectorTime (s)"]= (
     sector_times_2024["Sector3Time (s)"]
 )"""
 
-#Se crea un DataFrame con nombres de pilotos y sus tiempos de clasificación 2025 en segundos.   
+#Creation of dataframe with pilot names and their 2025 classification times per second   
 qualifying_2025 = pd.DataFrame({
     "Driver": ["Max Verstappen", "Lando Norris","Andrea Kimi Antonelli", "Oscar Piastri","George Russell",
                 "Carlos Sainz Jr.",  "Alexander Albon", "Charles Leclerc",  "Esteban Ocon", "Yuki Tsunoda",
@@ -45,7 +44,7 @@ qualifying_2025 = pd.DataFrame({
                            87.473, 87.604, 87.710, 87.830, 87.999]
 })
 
-# Map full names to FastF1 3-letter codes
+# Map full names to FastF1 codes
 driver_mapping = {
     "Oscar Piastri": "PIA", "George Russell": "RUS", "Lando Norris": "NOR", "Max Verstappen": "VER",
     "Lewis Hamilton": "HAM", "Charles Leclerc": "LEC", "Isack Hadjar": "HAD", "Andrea Kimi Antonelli": "ANT",
@@ -80,11 +79,12 @@ driver_wet_performance={
 qualifying_2025["WetPerformanceFactor"] = qualifying_2025["Driver"].map(driver_wet_performance)
 qualifying_2025["WetPerformanceFactor"] = qualifying_2025["WetPerformanceFactor"].fillna(1.0)
 
-weather_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Suzuka/2025-03-30?unitGroup=us&key=MEU6QNFEWXX73H7EZYFYWVWFQ&contentType=json&include=hours'
+weather_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Miami/2025-05-04?unitGroup=us&key=MEU6QNFEWXX73H7EZYFYWVWFQ&contentType=json&include=hours'
 response = requests.get(weather_url)
 weather_data = response.json()
+print (weather_data)
 
-#Extract the weather relevant data for the race (sunday at 2pm local time)
+#Extract the weather relevant data for the race (sunday  4pm local time)
 forecast_time= "2025-05-04 16:00:00"
 forecast_data = {}
 for hour_data in weather_data.get('days', [])[0].get('hours', []):
@@ -94,7 +94,7 @@ for hour_data in weather_data.get('days', [])[0].get('hours', []):
 rain_probability = forecast_data.get("precipprob", 0)
 temperature = forecast_data.get("temp", 20)
 
-if rain_probability>=0.75:
+if rain_probability>=0.5:
     qualifying_2025["QualifyingTime"]=qualifying_2025["QualifyingTime (s)"] * qualifying_2025["WetPerformanceFactor"]
 else:
     qualifying_2025["QualifyingTime"]=qualifying_2025["QualifyingTime (s)"] 
@@ -148,7 +148,7 @@ qualifying_2025["LastYearWinner"] = (qualifying_2025["DriverCode"] == "VER").ast
 qualifying_2025["QualifyingTime"] = qualifying_2025["QualifyingTime"] ** 2
 
 
-# Tiempo de carrera real promedio
+# Real average carrer time  
 lap_time_by_drivercode = laps_2024.groupby("Driver")["LapTime (s)"].mean()
 qualifying_2025["LapTime (s)"] = qualifying_2025["DriverCode"].map(lap_time_by_drivercode)
 
@@ -165,11 +165,12 @@ clean_data = qualifying_2025.dropna(subset=["LapTime (s)"]).copy()
 
 X= clean_data[["QualifyingTime", "RainProbability", "Temperature", "TeamPerformanceScore","Average2025Performance", "LastYearWinner"]].fillna(0)
 y = clean_data["LapTime (s)"]
-print("Número de muestras en X:", len(X))
+"""print("Número de muestras en X:", len(X))
 print("Número de muestras en y:", len(y))
-print("Primeras filas de y:\n", y.head())
+print("Primeras filas de y:\n", y.head())"""
 
 
+#Training of the model
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 model = GradientBoostingRegressor(n_estimators=200, learning_rate=0.1, random_state=38)
 model.fit(X_train, y_train)
@@ -194,7 +195,7 @@ final_results = final_results.dropna(subset=["PredictedRaceTime (s)"])
 
 final_results = final_results.sort_values(by="PredictedRaceTime (s)")"""
 
-
+#Print prediction 
 print("\n🏁 Predicción de resultados para el GP de Miami 2025 🏁\n")
 print(final_results[["Driver", "PredictedRaceTime (s)"]])
 
