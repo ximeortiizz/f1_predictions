@@ -34,7 +34,7 @@ This project uses machine learning to predict Formula 1 race lap times by analyz
 #### Credits
 
 This project was inspired by @mar-antaya.
-Much of the structure and initial codebase was adapted from her repository :)
+Some of the structure and initial codebase was adapted from her repository :)
 
  
 
